@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rootx - Next-Gen Software Solutions</title>
+    <meta name="description" content="Innovative software development company specializing in AI, web, mobile, and enterprise solutions">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        dark: {
+                            900: '#0a0a0a',
+                            800: '#171717',
+                            700: '#262626',
+                            600: '#404040',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Barlow', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-reverse': 'float-reverse 6s ease-in-out infinite',
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                    },
+                    keyframes: {
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        'float-reverse': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(20px)' },
+                        },
+                        'gradient-x': {
+                            '0%, 100%': {
+                                'background-size':'200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size':'200% 200%',
+                                'background-position': 'right center'
+                            }
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+
+/* #threejs-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.9;
+
+
+        } */
+        body {
+            margin: 0;
+            /* overflow: hidden; */
+            background: #000;
+        }
+        canvas {
+            position:absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.9;
+            display: block;
+        }
+    </style>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    
+    <!-- Splide for carousels -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+</head>
+<body class="bg-dark-900 text-gray-300 font-sans antialiased overflow-x-hidden">
+    <canvas id="spaceCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas to full window size
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Star class
+        class Star {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.5;
+                this.blinkSpeed = Math.random() * 0.05;
+                this.opacity = Math.random();
+                this.increasing = Math.random() > 0.5;
+            }
+
+            update() {
+                // Twinkling effect
+                if (this.increasing) {
+                    this.opacity += this.blinkSpeed;
+                    if (this.opacity >= 1) this.increasing = false;
+                } else {
+                    this.opacity -= this.blinkSpeed;
+                    if (this.opacity <= 0.3) this.increasing = true;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(144, 252, 3, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        // Meteor class
+        class Meteor {
+            constructor() {
+                this.reset();
+                this.speed = Math.random() * 10 + 10;
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width / 2 + canvas.width / 2;
+                this.y = Math.random() * canvas.height / 4;
+                this.size = Math.random() * 3 + 1;
+                this.length = Math.random() * 100 + 50;
+                this.angle = Math.random() * 30 + 15;
+                this.opacity = 1;
+                this.active = true;
+            }
+
+            update() {
+                this.x -= Math.cos(this.angle * Math.PI / 180) * this.speed;
+                this.y += Math.sin(this.angle * Math.PI / 180) * this.speed;
+                this.opacity -= 0.005;
+
+                if (this.x < 0 || this.y > canvas.height || this.opacity <= 0) {
+                    this.active = false;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(
+                    this.x + this.length * Math.cos(this.angle * Math.PI / 180),
+                    this.y - this.length * Math.sin(this.angle * Math.PI / 180)
+                );
+                ctx.lineWidth = this.size;
+                ctx.strokeStyle = `rgba(144, 252, 3, ${this.opacity})`;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "green";
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        // Comet class
+        // class Comet {
+        //     constructor() {
+        //         this.reset();
+        //         this.speed = Math.random() * 2 + 1;
+        //     }
+
+        //     reset() {
+        //         this.x = Math.random() * canvas.width;
+        //         this.y = -100;
+        //         this.size = Math.random() * 4 + 2;
+        //         this.tailLength = Math.random() * 150 + 100;
+        //         this.angle = Math.random() * 10 + 5;
+        //         this.opacity = 1;
+        //         this.active = true;
+        //     }
+
+        //     update() {
+        //         this.x += Math.sin(this.angle * Math.PI / 180) * this.speed;
+        //         this.y += Math.cos(this.angle * Math.PI / 180) * this.speed;
+                
+        //         if (this.y > canvas.height + this.tailLength || this.x < -100 || this.x > canvas.width + 100) {
+        //             this.active = false;
+        //         }
+        //     }
+
+        //     draw() {
+        //         ctx.save();
+                
+        //         // Comet tail
+        //         const gradient = ctx.createLinearGradient(
+        //             this.x, this.y, 
+        //             this.x - this.tailLength * Math.sin(this.angle * Math.PI / 180),
+        //             this.y - this.tailLength * Math.cos(this.angle * Math.PI / 180)
+        //         );
+        //         gradient.addColorStop(0, `rgba(173, 216, 230, ${this.opacity})`);
+        //         gradient.addColorStop(0.5, `rgba(100, 149, 237, ${this.opacity * 0.7})`);
+        //         gradient.addColorStop(1, `rgba(30, 144, 255, 0)`);
+                
+        //         ctx.beginPath();
+        //         ctx.moveTo(this.x, this.y);
+        //         ctx.lineTo(
+        //             this.x - this.tailLength * Math.sin(this.angle * Math.PI / 180),
+        //             this.y - this.tailLength * Math.cos(this.angle * Math.PI / 180)
+        //         );
+        //         ctx.lineWidth = this.size;
+        //         ctx.strokeStyle = gradient;
+        //         ctx.stroke();
+                
+        //         // Comet head
+        //         ctx.beginPath();
+        //         ctx.arc(this.x, this.y, this.size * 1.5, 0, Math.PI * 2);
+        //         ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+        //         ctx.shadowBlur = 20;
+        //         ctx.shadowColor = "white";
+        //         ctx.fill();
+                
+        //         ctx.restore();
+        //     }
+        // }
+
+        // Create objects
+        const stars = Array(200).fill().map(() => new Star());
+        const meteors = [];
+        // const comets = [];
+
+        // Animation loop
+        function animate() {
+            // Clear canvas with semi-transparent black for trail effect
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update and draw stars
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+            
+            // Update and draw meteors
+            meteors.forEach((meteor, index) => {
+                meteor.update();
+                meteor.draw();
+                if (!meteor.active) {
+                    meteors.splice(index, 1);
+                }
+            });
+            
+            // Update and draw comets
+            // comets.forEach((comet, index) => {
+            //     comet.update();
+            //     comet.draw();
+            //     if (!comet.active) {
+            //         comets.splice(index, 1);
+            //     }
+            // });
+            
+            // Randomly add new meteors
+            if (Math.random() < 0.02 && meteors.length < 3) {
+                meteors.push(new Meteor());
+            }
+            
+            // // Randomly add new comets (less frequently)
+            // if (Math.random() < 0.003 && comets.length < 2) {
+            //     comets.push(new Comet());
+            // }
+            
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+    <!-- Preloader -->
+    <div id="preloader" class="fixed inset-0 z-50 flex items-center justify-center bg-dark-900 transition-opacity duration-500">
+        <div class="relative w-24 h-24">
+            <div class="absolute inset-0 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+            <div class="absolute inset-4 border-4 border-primary-400 border-b-transparent rounded-full animate-spin-reverse"></div>
+        </div>
+    </div>
+    
+    <!-- Floating Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-10">
+        <div class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary-900 opacity-10 blur-3xl animate-float"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-72 h-72 rounded-full bg-primary-800 opacity-10 blur-3xl animate-float-reverse"></div>
+        <div class="absolute top-1/3 right-1/5 w-56 h-56 rounded-full bg-primary-700 opacity-10 blur-3xl animate-float"></div> 
+    </div>
+    
+    <!-- Three.js Background Canvas -->
+ <div id="threejs-bg"></div>
+
+ <!-- p5.js Interactive Elements Canvas -->
+ <div id="p5-interactive"></div>
+    <!-- Navigation -->
+     <header class="fixed w-full z-40 backdrop-blur-md bg-dark-900/80 border-b border-dark-700">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-display font-bold text-white">
+                <span class="text-primary-500">Root</span>x
+            </a>
+            
+            <div class="hidden lg:flex space-x-8">
+                <a href="#home" class="text-white hover:text-primary-400 transition-colors">Home</a>
+                <a href="#services" class="text-gray-400 hover:text-primary-400 transition-colors">Services</a>
+                <a href="#work" class="text-gray-400 hover:text-primary-400 transition-colors">Work</a>
+                <a href="#about" class="text-gray-400 hover:text-primary-400 transition-colors">About</a>
+                <a href="#blog" class="text-gray-400 hover:text-primary-400 transition-colors">Blog</a>
+                <a href="#contact" class="text-gray-400 hover:text-primary-400 transition-colors">Contact</a>
+            </div>
+            
+            <a href="#contact" class="hidden lg:block px-6 py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-full font-medium hover:shadow-lg hover:shadow-primary-500/20 transition-all">
+                Get Started
+            </a>
+            
+            <button id="mobile-menu-button" class="lg:hidden text-gray-400 hover:text-white focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </nav>
+         
+        <!-- Mobile Menu -->
+         <div id="mobile-menu" class="lg:hidden hidden bg-dark-800 border-t border-dark-700">
+            <div class="container mx-auto px-6 py-4 flex flex-col space-y-4">
+                <a href="#home" class="text-white hover:text-primary-400 transition-colors">Home</a>
+                <a href="#services" class="text-gray-400 hover:text-primary-400 transition-colors">Services</a>
+                <a href="#work" class="text-gray-400 hover:text-primary-400 transition-colors">Work</a>
+                <a href="#about" class="text-gray-400 hover:text-primary-400 transition-colors">About</a>
+                <a href="#blog" class="text-gray-400 hover:text-primary-400 transition-colors">Blog</a>
+                <a href="#contact" class="text-gray-400 hover:text-primary-400 transition-colors">Contact</a>
+                <a href="#contact" class="mt-4 px-6 py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-full font-medium text-center hover:shadow-lg hover:shadow-primary-500/20 transition-all">
+                    Get Started
+                </a>
+            </div>
+        </div>
+    </header> 
+
+    <!-- Hero Section -->
+     <section id="home" class="min-h-screen flex items-center pt-20">
+        
+        <div class="container mx-auto px-6 py-24">
+            <div class="flex flex-col lg:flex-row items-center">
+                <div class="lg:w-1/2 mb-16 lg:mb-0">
+                    <h1 class="text-4xl md:text-6xl font-display font-bold text-white mb-6 leading-tight">
+                        Building <span class="text-primary-500">Digital</span> Experiences That Matter
+                    </h1>
+                    <p class="text-lg md:text-xl text-gray-400 mb-8 max-w-lg">
+                        We craft innovative software solutions that drive growth, enhance efficiency, and create meaningful connections with your audience.
+                    </p>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                        <a href="#contact" class="px-8 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-full font-medium hover:shadow-lg hover:shadow-primary-500/20 transition-all text-center">
+                            Start Your Project
+                        </a>
+                        <a href="#work" class="px-8 py-3 border border-gray-700 text-white rounded-full font-medium hover:border-primary-400 hover:text-primary-400 transition-all text-center">
+                            View Our Work
+                        </a>
+                    </div>
+                    
+                    <div class="mt-12 flex items-center space-x-6">
+                        <div class="flex -space-x-2">
+                            <div class="w-10 h-10 rounded-full bg-primary-500 border-2 border-dark-800"></div>
+                            <div class="w-10 h-10 rounded-full bg-primary-400 border-2 border-dark-800"></div>
+                            <div class="w-10 h-10 rounded-full bg-primary-300 border-2 border-dark-800"></div>
+                        </div>
+                        <div>
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                                <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                                <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                                <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                                <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-sm text-gray-400">Trusted by 100+ companies worldwide</p>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <div class="lg:w-1/2 relative">
+                    <div  class="w-full h-96 lg:h-auto aspect-square rounded-2xl overflow-hidden relative">
+                        <div class="absolute inset-0 flex items-center justify-center ">
+                    <div class="md:w-1/2 flex justify-center">
+                        <div class="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96">
+                            <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 opacity-20 blur-xl animate-pulse"></div>
+                            <div class="absolute inset-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 opacity-10 blur-lg animate-pulse delay-300"></div>
+                            <div class="relative w-full h-full rounded-full overflow-hidden border-4 border-gray-700">
+                                <img src="https://source.unsplash.com/random/600x600/?portrait" alt="Mage" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    </div>
+                    
+                    <!-- 3D Canvas Container -->
+                    <!-- <div id="hero-canvas" class="w-full h-96 lg:h-auto aspect-square rounded-2xl overflow-hidden relative"> -->
+                        <!-- Placeholder for Three.js scene -->
+                        <!-- <div class="absolute inset-0 bg-gradient-to-br from-dark-800 to-dark-900 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                <p class="text-gray-400">Loading interactive 3D visualization...</p>
+                            </div>
+                        </div>
+                    </div> -->
+                    
+                    <!-- Floating Tech Badges -->
+                   <!-- <div class="absolute -bottom-6 -left-6 bg-dark-800 border border-dark-700 rounded-2xl p-4 shadow-lg">
+                        <div class="flex space-x-2">
+                            <div class="w-10 h-10 bg-dark-700 rounded-lg flex items-center justify-center">
+                                <i class="fab fa-react text-blue-400 text-xl"></i>
+                            </div>
+                            <div class="w-10 h-10 bg-dark-700 rounded-lg flex items-center justify-center">
+                                <i class="fab fa-node-js text-green-500 text-xl"></i>
+                            </div>
+                            <div class="w-10 h-10 bg-dark-700 rounded-lg flex items-center justify-center">
+                                <i class="fab fa-python text-blue-500 text-xl"></i>
+                            </div>
+                        </div>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+    </section>
+ 
+
+ 
+
+   
+    <!-- Clients Section -->
+    <section class="py-12 bg-dark-800 border-y border-dark-700">
+        <div class="container mx-auto px-6">
+            <p class="text-center text-gray-400 mb-8">TRUSTED BY INNOVATIVE COMPANIES WORLDWIDE</p>
+            <div class="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-70 hover:opacity-100 transition-opacity">
+                <div class="text-2xl font-bold text-gray-300">TechCorp</div>
+                <div class="text-2xl font-bold text-gray-300">InnovaSoft</div>
+                <div class="text-2xl font-bold text-gray-300">DigitalEdge</div>
+                <div class="text-2xl font-bold text-gray-300">WebSolutions</div>
+                <div class="text-2xl font-bold text-gray-300">AppVenture</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="inline-block px-3 py-1 text-sm font-medium text-primary-500 bg-primary-500/10 rounded-full mb-4">OUR SERVICES</span>
+                <h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-4">Tailored Solutions for Your Digital Success</h2>
+                <p class="max-w-2xl mx-auto text-gray-400">We offer comprehensive software development services designed to meet your unique business needs and drive measurable results.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Service 1 -->
+                <div class="bg-dark-800 border border-dark-700 rounded-2xl p-8 hover:border-primary-500/30 transition-all group">
+                    <div class="w-14 h-14 bg-primary-500/10 rounded-lg flex items-center justify-center text-primary-500 mb-6 group-hover:bg-primary-500/20 transition-colors">
+                        <i class="fas fa-code text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Custom Software Development</h3>
+                    <p class="text-gray-400 mb-4">Bespoke solutions engineered to solve your specific business challenges with cutting-edge technology.</p>
+                    <a href="#" class="inline-flex items-center text-primary-500 group-hover:text-primary-400 transition-colors">
+                        Learn more
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+                
+                <!-- Service 2 -->
+                <div class="bg-dark-800 border border-dark-700 rounded-2xl p-8 hover:border-primary-500/30 transition-all group">
+                    <div class="w-14 h-14 bg-primary-500/10 rounded-lg flex items-center justify-center text-primary-500 mb-6 group-hover:bg-primary-500/20 transition-colors">
+                        <i class="fas fa-globe text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Web Application Development</h3>
+                    <p class="text-gray-400 mb-4">High-performance web applications with intuitive interfaces that engage users and drive conversions.</p>
+                    <a href="#" class="inline-flex items-center text-primary-500 group-hover:text-primary-400 transition-colors">
+                        Learn more
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+                
+                <!-- Service 3 -->
+                <div class="bg-dark-800 border border-dark-700 rounded-2xl p-8 hover:border-primary-500/30 transition-all group">
+                    <div class="w-14 h-14 bg-primary-500/10 rounded-lg flex items-center justify-center text-primary-500 mb-6 group-hover:bg-primary-500/20 transition-colors">
+                        <i class="fas fa-mobile-alt text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Mobile App Development</h3>
+                    <p class="text-gray-400 mb-4">Native and cross-platform mobile applications that deliver seamless experiences across all devices.</p>
+                    <a href="#" class="inline-flex items-center text-primary-500 group-hover:text-primary-400 transition-colors">
+                        Learn more
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+                
+                <!-- Service 4 -->
+                <div class="bg-dark-800 border border-dark-700 rounded-2xl p-8 hover:border-primary-500/30 transition-all group">
+                    <div class="w-14 h-14 bg-primary-500/10 rounded-lg flex items-center justify-center text-primary-500 mb-6 group-hover:bg-primary-500/20 transition-colors">
+                        <i class="fas fa-brain text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">AI & Machine Learning</h3>
+                    <p class="text-gray-400 mb-4">Intelligent systems that learn from data to automate processes and uncover valuable insights.</p>
+                    <a href="#" class="inline-flex items-center text-primary-500 group-hover:text-primary-400 transition-colors">
+                        Learn more
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+                
+                <!-- Service 5 -->
+                <div class="bg-dark-800 border border-dark-700 rounded-2xl p-8 hover:border-primary-500/30 transition-all group">
+                    <div class="w-14 h-14 bg-primary-500/10 rounded-lg flex items-center justify-center text-primary-500 mb-6 group-hover:bg-primary-500/20 transition-colors">
+                        <i class="fas fa-cloud text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Cloud Solutions</h3>
+                    <p class="text-gray-400 mb-4">Scalable cloud architectures that ensure reliability, security, and cost-efficiency for your applications.</p>
+                    <a href="#" class="inline-flex items-center text-primary-500 group-hover:text-primary-400 transition-colors">
+                        Learn more
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+                
+                <!-- Service 6 -->
+                <div class="bg-dark-800 border border-dark-700 rounded-2xl p-8 hover:border-primary-500/30 transition-all group">
+                    <div class="w-14 h-14 bg-primary-500/10 rounded-lg flex items-center justify-center text-primary-500 mb-6 group-hover:bg-primary-500/20 transition-colors">
+                        <i class="fas fa-shield-alt text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Cybersecurity</h3>
+                    <p class="text-gray-400 mb-4">Comprehensive security solutions to protect your digital assets from evolving threats.</p>
+                    <a href="#" class="inline-flex items-center text-primary-500 group-hover:text-primary-400 transition-colors">
+                        Learn more
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="text-center mt-16">
+                <a href="#" class="inline-flex items-center px-6 py-3 border border-gray-700 text-white rounded-full font-medium hover:border-primary-500 hover:text-primary-500 transition-all">
+                    Explore all services
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="py-20 bg-dark-800">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="inline-block px-3 py-1 text-sm font-medium text-primary-500 bg-primary-500/10 rounded-full mb-4">OUR PROCESS</span>
+                <h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-4">How We Bring Your Vision to Life</h2>
+                <p class="max-w-2xl mx-auto text-gray-400">A transparent, collaborative approach that ensures your project's success from concept to launch.</p>
+            </div>
+            
+            <div class="relative">
+                <!-- Timeline -->
+                <div class="hidden lg:block absolute left-1/2 top-0 h-full w-0.5 bg-dark-700 -ml-px"></div>
+                
+                <!-- Process Steps -->
+                <div class="space-y-12 lg:space-y-0">
+                    <!-- Step 1 -->
+                    <div class="relative lg:flex items-center justify-between">
+                        <div class="lg:w-5/12 lg:pr-12 mb-8 lg:mb-0 text-right">
+                            <div class="lg:hidden absolute -left-8 top-0 w-4 h-4 bg-primary-500 rounded-full z-10 mt-1"></div>
+                            <h3 class="text-xl font-bold text-white mb-2">Discovery & Planning</h3>
+                            <p class="text-gray-400">We dive deep to understand your business goals, target audience, and technical requirements.</p>
+                        </div>
+                        
+                        <div class="hidden lg:block w-16 h-16 rounded-full bg-primary-500/10 border border-primary-500/30 flex items-center justify-center text-primary-500 mx-auto">
+                            <span class="text-2xl font-bold leading-none inline-flex items-center justify-center text-center" style="margin-left: 24px; margin-top: 16px;">1</span>
+                        </div>
+                        
+                        <div class="lg:w-5/12 lg:pl-12">
+                            <div class="bg-dark-700 border border-dark-600 rounded-xl p-6">
+                                <h4 class="font-medium text-white mb-2">Key Activities:</h4>
+                                <ul class="space-y-2 text-gray-400">
+                                    <li class="flex items-start">
+                                        <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span>Requirement gathering workshops</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span>Competitive analysis</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span>Technical feasibility assessment</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2 -->
+                    <div class="relative lg:flex items-center justify-between">
+                        <div class="lg:w-5/12 lg:pr-12 mb-8 lg:mb-0 order-last">
+                            <div class="lg:hidden absolute -left-8 top-0 w-4 h-4 bg-primary-500 rounded-full z-10 mt-1"></div>
+                            <div class="bg-dark-700 border border-dark-600 rounded-xl p-6">
+                                <h4 class="font-medium text-white mb-2">Key Activities:</h4>
+                                <ul class="space-y-2 text-gray-400">
+                                    <li class="flex items-start">
+                                        <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span>User flow diagrams</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span>Wireframing & prototyping</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span>Design system creation</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="hidden lg:block w-16 h-16 rounded-full bg-primary-500/10 border border-primary-500/30 flex items-center justify-center text-primary-500 mx-auto order-2">
+                            <span class="text-2xl font-bold leading-none inline-flex items-center justify-center text-center" style="margin-left: 24px; margin-top: 16px;">2</span>
+                        </div>
+                        
+                        <div class="lg:w-5/12 lg:pl-12 text-right order-1">
+                            <h3 class="text-xl font-bold text-white mb-2">Design & Prototyping</h3>
+                            <p class="text-gray-400">We create intuitive user interfaces and interactive prototypes to visualize your product.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3 -->
+                    <div class="relative lg:flex items-center justify-between">
+                        <div class="lg:w-5/12 lg:pr-12 mb-8 lg:mb-0 text-right">
+                            <div class="lg:hidden absolute -left-8 top-0 w-4 h-4 bg-primary-500 rounded-full z-10 mt-1"></div>
+                            <h3 class="text-xl font-bold text-white mb-2">Development</h3>
+                            <p class="text-gray-400">Our engineers build robust, scalable solutions using modern technologies and best practices.</p>
+                        </div>
+                        
+                        <div class="hidden lg:block w-16 h-16 rounded-full bg-primary-500/10 border border-primary-500/30 flex items-center justify-center text-primary-500 mx-auto">
+                            <span class="text-2xl font-bold leading-none inline-flex items-center justify-center text-center" style="margin-left: 24px; margin-top: 16px;">3</span>
+                        </div>
+                        
+                        <div class="lg:w-5/12 lg:pl-12">
+                            <div class="bg-dark-700 border border-dark-600 rounded-xl p-6">
+                                <h4 class="font-medium text-white mb-2">Key Activities:</h4>
+                                <ul class="space-y-2 text-gray-400">
+                                    
+<li class="flex items-start">
+    <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span>Agile sprints with bi-weekly demos</span>
+</li>
+<li class="flex items-start">
+    <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span>Code reviews & quality assurance</span>
+</li>
+<li class="flex items-start">
+    <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span>Continuous integration & deployment</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- Step 4 -->
+<div class="relative lg:flex items-center justify-between">
+<div class="lg:w-5/12 lg:pr-12 mb-8 lg:mb-0 order-last">
+<div class="lg:hidden absolute -left-8 top-0 w-4 h-4 bg-primary-500 rounded-full z-10 mt-1"></div>
+<div class="bg-dark-700 border border-dark-600 rounded-xl p-6">
+<h4 class="font-medium text-white mb-2">Key Activities:</h4>
+<ul class="space-y-2 text-gray-400">
+<li class="flex items-start">
+    <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span>Performance & load testing</span>
+</li>
+<li class="flex items-start">
+    <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span>Security vulnerability scanning</span>
+</li>
+<li class="flex items-start">
+    <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span>User acceptance testing</span>
+</li>
+</ul>
+</div>
+</div>
+
+<div class="hidden lg:block w-16 h-16 rounded-full bg-primary-500/10 border border-primary-500/30 flex items-center justify-center text-primary-500 mx-auto order-2">
+    <span class="text-2xl font-bold leading-none inline-flex items-center justify-center text-center" style="margin-left: 24px; margin-top: 16px;">4</span>
+</div>
+
+<div class="lg:w-5/12 lg:pl-12 text-right order-1">
+<h3 class="text-xl font-bold text-white mb-2">Testing & Quality Assurance</h3>
+<p class="text-gray-400">Rigorous testing ensures your software performs flawlessly under all conditions.</p>
+</div>
+</div>
+
+<!-- Step 5 -->
+<div class="relative lg:flex items-center justify-between">
+<div class="lg:w-5/12 lg:pr-12 mb-8 lg:mb-0 text-right">
+<div class="lg:hidden absolute -left-8 top-0 w-4 h-4 bg-primary-500 rounded-full z-10 mt-1"></div>
+<h3 class="text-xl font-bold text-white mb-2">Deployment & Support</h3>
+<p class="text-gray-400">We launch your product and provide ongoing support to ensure long-term success.</p>
+</div>
+
+<div class="hidden lg:block w-16 h-16 rounded-full bg-primary-500/10 border border-primary-500/30 flex items-center justify-center text-primary-500 mx-auto">
+    <span class="text-2xl font-bold leading-none inline-flex items-center justify-center text-center" style="margin-left: 24px; margin-top: 16px;">5</span>
+</div>
+
+<div class="lg:w-5/12 lg:pl-12">
+<div class="bg-dark-700 border border-dark-600 rounded-xl p-6">
+<h4 class="font-medium text-white mb-2">Key Activities:</h4>
+<ul class="space-y-2 text-gray-400">
+<li class="flex items-start">
+    <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span>Production deployment</span>
+</li>
+<li class="flex items-start">
+    <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span>Performance monitoring</span>
+</li>
+<li class="flex items-start">
+    <svg class="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span>Maintenance & updates</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Work/Portfolio Section -->
+<section id="work" class="py-20 bg-dark-900">
+<div class="container mx-auto px-6">
+<div class="text-center mb-16">
+<span class="inline-block px-3 py-1 text-sm font-medium text-primary-500 bg-primary-500/10 rounded-full mb-4">OUR WORK</span>
+<h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-4">Projects We're Proud Of</h2>
+<p class="max-w-2xl mx-auto text-gray-400">Explore our portfolio of innovative solutions that have transformed businesses and delighted users.</p>
+</div>
+
+<!-- Portfolio Filter -->
+<div class="flex justify-center mb-12">
+<div class="inline-flex flex-wrap bg-dark-800 rounded-full p-1">
+<button class="px-5 py-2 text-sm font-medium rounded-full bg-primary-500 text-white">All</button>
+<button class="px-5 py-2 text-sm font-medium rounded-full text-gray-400 hover:text-white transition-colors">Web</button>
+<button class="px-5 py-2 text-sm font-medium rounded-full text-gray-400 hover:text-white transition-colors">Mobile</button>
+<button class="px-5 py-2 text-sm font-medium rounded-full text-gray-400 hover:text-white transition-colors">AI</button>
+<button class="px-5 py-2 text-sm font-medium rounded-full text-gray-400 hover:text-white transition-colors">Enterprise</button>
+</div>
+</div>
+
+<!-- Portfolio Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Project 1 -->
+<div class="group relative overflow-hidden rounded-2xl bg-dark-800 border border-dark-700 hover:border-primary-500/30 transition-all">
+<div class="h-64 bg-gradient-to-br from-dark-700 to-dark-800 flex items-center justify-center">
+<div class="text-center">
+<div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+<p class="text-gray-400">Project preview loading</p>
+</div>
+</div>
+<div class="p-6">
+<h3 class="text-xl font-bold text-white mb-2">Enterprise SaaS Platform</h3>
+<p class="text-gray-400 mb-4">A comprehensive business management solution with AI-powered analytics.</p>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="px-3 py-1 text-xs rounded-full bg-dark-700 text-gray-300">React</span>
+<span class="px-3 py-1 text-xs rounded-full bg-dark-700 text-gray-300">Node.js</span>
+<span class="px-3 py-1 text-xs rounded-full bg-dark-700 text-gray-300">PostgreSQL</span>
+</div>
+<a href="#" class="inline-flex items-center text-primary-500 group-hover:text-primary-400 transition-colors">
+View case study
+<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+</svg>
+</a>
+</div>
+</div>
+
+<!-- Project 2 -->
+<div class="group relative overflow-hidden rounded-2xl bg-dark-800 border border-dark-700 hover:border-primary-500/30 transition-all">
+<div class="h-64 bg-gradient-to-br from-dark-700 to-dark-800 flex items-center justify-center">
+<div class="text-center">
+<div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+<p class="text-gray-400">Project preview loading</p>
+</div>
+</div>
+<div class="p-6">
+<h3 class="text-xl font-bold text-white mb-2">Health & Fitness Mobile App</h3>
+<p class="text-gray-400 mb-4">Personalized workout plans with real-time form correction using computer vision.</p>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="px-3 py-1 text-xs rounded-full bg-dark-700 text-gray-300">Flutter</span>
+<span class="px-3 py-1 text-xs rounded-full bg-dark-700 text-gray-300">TensorFlow</span>
+<span class="px-3 py-1 text-xs rounded-full bg-dark-700 text-gray-300">Firebase</span>
+</div>
+<a href="#" class="inline-flex items-center text-primary-500 group-hover:text-primary-400 transition-colors">
+View case study
+<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+</svg>
+</a>
+</div>
+</div>
+
+<!-- Project 3 -->
+<div class="group relative overflow-hidden rounded-2xl bg-dark-800 border border-dark-700 hover:border-primary-500/30 transition-all">
+<div class="h-64 bg-gradient-to-br from-dark-700 to-dark-800 flex items-center justify-center">
+<div class="text-center">
+<div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+<p class="text-gray-400">Project preview loading</p>
+</div>
+</div>
+<div class="p-6">
+<h3 class="text-xl font-bold text-white mb-2">E-commerce Platform</h3>
+<p class="text-gray-400 mb-4">Scalable online marketplace with AR product visualization.</p>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="px-3 py-1 text-xs rounded-full bg-dark-700 text-gray-300">Next.js</span>
+<span class="px-3 py-1 text-xs rounded-full bg-dark-700 text-gray-300">GraphQL</span>
+<span class="px-3 py-1 text-xs rounded-full bg-dark-700 text-gray-300">Three.js</span>
+</div>
+<a href="#" class="inline-flex items-center text-primary-500 group-hover:text-primary-400 transition-colors">
+View case study
+<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+</svg>
+</a>
+</div>
+</div>
+</div>
+
+<div class="text-center mt-16">
+<a href="#" class="inline-flex items-center px-6 py-3 border border-gray-700 text-white rounded-full font-medium hover:border-primary-500 hover:text-primary-500 transition-all">
+View all projects
+<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+</svg>
+</a>
+</div>
+</div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-16 bg-gradient-to-r from-dark-800 to-dark-900">
+<div class="container mx-auto px-6">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+<div class="p-6">
+<div class="text-4xl md:text-5xl font-display font-bold text-primary-500 mb-2">50+</div>
+<p class="text-gray-400">Projects Completed</p>
+</div>
+<div class="p-6">
+<div class="text-4xl md:text-5xl font-display font-bold text-primary-500 mb-2">100%</div>
+<p class="text-gray-400">Client Satisfaction</p>
+</div>
+<div class="p-6">
+<div class="text-4xl md:text-5xl font-display font-bold text-primary-500 mb-2">15+</div>
+<p class="text-gray-400">Industries Served</p>
+</div>
+<div class="p-6">
+<div class="text-4xl md:text-5xl font-display font-bold text-primary-500 mb-2">10M+</div>
+<p class="text-gray-400">Users Impacted</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-20 bg-dark-800">
+<div class="container mx-auto px-6">
+<div class="text-center mb-16">
+<span class="inline-block px-3 py-1 text-sm font-medium text-primary-500 bg-primary-500/10 rounded-full mb-4">TESTIMONIALS</span>
+<h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-4">What Our Clients Say</h2>
+<p class="max-w-2xl mx-auto text-gray-400">Don't just take our word for it - hear from the businesses we've helped transform.</p>
+</div>
+
+<div class="splide">
+<div class="splide__track">
+<div class="splide__list">
+<!-- Testimonial 1 -->
+<div class="splide__slide">
+<div class="bg-dark-700 border border-dark-600 rounded-2xl p-8 h-full">
+<div class="flex items-center mb-6">
+<div class="w-12 h-12 rounded-full bg-primary-500/10 flex items-center justify-center text-primary-500 mr-4">
+    <i class="fas fa-user text-xl"></i>
+</div>
+<div>
+    <h4 class="font-bold text-white">Sarah Johnson</h4>
+    <p class="text-sm text-gray-400">CEO, TechStart Inc.</p>
+</div>
+</div>
+<p class="text-gray-300 mb-6">"Rootx transformed our outdated systems into a modern, scalable platform that has increased our operational efficiency by 40%. Their team's expertise and dedication were evident throughout the project."</p>
+<div class="flex">
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+</div>
+</div>
+</div>
+
+<!-- Testimonial 2 -->
+<div class="splide__slide">
+<div class="bg-dark-700 border border-dark-600 rounded-2xl p-8 h-full">
+<div class="flex items-center mb-6">
+<div class="w-12 h-12 rounded-full bg-primary-500/10 flex items-center justify-center text-primary-500 mr-4">
+    <i class="fas fa-user text-xl"></i>
+</div>
+<div>
+    <h4 class="font-bold text-white">Michael Chen</h4>
+    <p class="text-sm text-gray-400">CTO, HealthTrack</p>
+</div>
+</div>
+<p class="text-gray-300 mb-6">"The mobile app Rootx developed for us has been a game-changer. User engagement has doubled, and their innovative use of AI for personalized recommendations has set us apart from competitors."</p>
+<div class="flex">
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+</div>
+</div>
+</div>
+
+<!-- Testimonial 3 -->
+<div class="splide__slide">
+<div class="bg-dark-700 border border-dark-600 rounded-2xl p-8 h-full">
+<div class="flex items-center mb-6">
+<div class="w-12 h-12 rounded-full bg-primary-500/10 flex items-center justify-center text-primary-500 mr-4">
+    <i class="fas fa-user text-xl"></i>
+</div>
+<div>
+    <h4 class="font-bold text-white">David Rodriguez</h4>
+    <p class="text-sm text-gray-400">Director, EduTech Solutions</p>
+</div>
+</div>
+<p class="text-gray-300 mb-6">"Rootx's ability to understand our complex requirements and translate them into an elegant solution was impressive. Their ongoing support has been invaluable as we continue to scale."</p>
+<div class="flex">
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+<svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Team Section -->
+<section id="about" class="py-20 bg-dark-900">
+<div class="container mx-auto px-6">
+<div class="text-center mb-16">
+<span class="inline-block px-3 py-1 text-sm font-medium text-primary-500 bg-primary-500/10 rounded-full mb-4">OUR TEAM</span>
+<h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-4">Meet The Minds Behind Rootx</h2>
+<p class="max-w-2xl mx-auto text-gray-400">A diverse team of passionate experts dedicated to delivering exceptional results.</p>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+<!-- Team Member 1 -->
+<div class="group relative overflow-hidden rounded-2xl bg-dark-800 border border-dark-700 hover:border-primary-500/30 transition-all">
+<div class="h-64 bg-gradient-to-br from-dark-700 to-dark-800 flex items-center justify-center">
+<div class="text-center">
+<div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+<p class="text-gray-400">Team member photo</p>
+</div>
+</div>
+<div class="p-6">
+<h3 class="text-xl font-bold text-white mb-1">Alex Morgan</h3>
+<p class="text-primary-500 mb-4">CEO & Founder</p>
+<p class="text-gray-400 mb-4">Visionary leader with 15+ years in software architecture and business strategy.</p>
+<div class="flex space-x-4">
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">
+<i class="fab fa-linkedin-in"></i>
+</a>
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">
+<i class="fab fa-twitter"></i>
+</a>
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">
+<i class="fab fa-github"></i>
+</a>
+</div>
+</div>
+</div>
+
+<!-- Team Member 2 -->
+<div class="group relative overflow-hidden rounded-2xl bg-dark-800 border border-dark-700 hover:border-primary-500/30 transition-all">
+<div class="h-64 bg-gradient-to-br from-dark-700 to-dark-800 flex items-center justify-center">
+<div class="text-center">
+<div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+<p class="text-gray-400">Team member photo</p>
+</div>
+</div>
+<div class="p-6">
+<h3 class="text-xl font-bold text-white mb-1">Sarah Chen</h3>
+<p class="text-primary-500 mb-4">CTO</p>
+<p class="text-gray-400 mb-4">Tech innovator specializing in AI, cloud computing, and scalable systems.</p>
+<div class="flex space-x-4">
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">
+<i class="fab fa-linkedin-in"></i>
+</a>
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">
+<i class="fab fa-twitter"></i>
+</a>
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">
+<i class="fab fa-github"></i>
+</a>
+</div>
+</div>
+</div>
+
+<!-- Team Member 3 -->
+<div class="group relative overflow-hidden rounded-2xl bg-dark-800 border border-dark-700 hover:border-primary-500/30 transition-all">
+<div class="h-64 bg-gradient-to-br from-dark-700 to-dark-800 flex items-center justify-center">
+<div class="text-center">
+<div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+<p class="text-gray-400">Team member photo</p>
+</div>
+</div>
+<div class="p-6">
+<h3 class="text-xl font-bold text-white mb-1">James Rodriguez</h3>
+<p class="text-primary-500 mb-4">Lead Designer</p>
+<p class="text-gray-400 mb-4">UX/UI expert focused on creating intuitive, beautiful digital experiences.</p>
+<div class="flex space-x-4">
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">
+<i class="fab fa-linkedin-in"></i>
+</a>
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">
+<i class="fab fa-twitter"></i>
+</a>
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">
+<i class="fab fa-dribbble"></i>
+</a>
+</div>
+</div>
+</div>
+
+<!-- Team Member 4 -->
+<div class="group relative overflow-hidden rounded-2xl bg-dark-800 border border-dark-700 hover:border-primary-500/30 transition-all">
+<div class="h-64 bg-gradient-to-br from-dark-700 to-dark-800 flex items-center justify-center">
+<div class="text-center">
+<div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+<p class="text-gray-400">Team member photo</p>
+</div>
+</div>
+<div class="p-6">
+<h3 class="text-xl font-bold text-white mb-1">Priya Patel</h3>
+<p class="text-primary-500 mb-4">Senior Developer</p>
+<p class="text-gray-400 mb-4">Full-stack wizard with expertise in React, Node.js, and database architecture.</p>
+<div class="flex space-x-4">
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">
+<i class="fab fa-linkedin-in"></i>
+</a>
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">
+<i class="fab fa-twitter"></i>
+</a>
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">
+<i class="fab fa-github"></i>
+</a>
+</div>
+</div>
+</div>
+</div>
+
+<div class="text-center mt-16">
+<a href="#" class="inline-flex items-center px-6 py-3 border border-gray-700 text-white rounded-full font-medium hover:border-primary-500 hover:text-primary-500 transition-all">
+Meet the full team
+<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+</svg>
+</a>
+</div>
+</div>
+</section>
+
+<!-- Blog Section -->
+<section id="blog" class="py-20 bg-dark-800">
+<div class="container mx-auto px-6">
+<div class="text-center mb-16">
+<span class="inline-block px-3 py-1 text-sm font-medium text-primary-500 bg-primary-500/10 rounded-full mb-4">BLOG</span>
+<h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-4">Latest Insights</h2>
+<p class="max-w-2xl mx-auto text-gray-400">Thought leadership, technical guides, and industry trends from our experts.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Blog Post 1 -->
+<div class="group relative overflow-hidden rounded-2xl bg-dark-700 border border-dark-600 hover:border-primary-500/30 transition-all">
+<div class="h-48 bg-gradient-to-br from-dark-600 to-dark-700 flex items-center justify-center">
+<div class="text-center">
+<div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+<p class="text-gray-400">Blog post image</p>
+</div>
+</div>
+<div class="p-6">
+<div class="flex items-center text-sm text-gray-400 mb-3">
+<span>June 15, 2023</span>
+<span class="mx-2">•</span>
+<span>8 min read</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-3 group-hover:text-primary-500 transition-colors">The Future of AI in Enterprise Software</h3>
+<p class="text-gray-400 mb-4">Exploring how artificial intelligence is transforming business applications and workflows.</p>
+<a href="#" class="inline-flex items-center text-primary-500 group-hover:text-primary-400 transition-colors">
+Read article
+<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+</svg>
+</a>
+</div>
+</div>
+
+<!-- Blog Post 2 -->
+<div class="group relative overflow-hidden rounded-2xl bg-dark-700 border border-dark-600 hover:border-primary-500/30 transition-all">
+<div class="h-48 bg-gradient-to-br from-dark-600 to-dark-700 flex items-center justify-center">
+<div class="text-center">
+<div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+<p class="text-gray-400">Blog post image</p>
+</div>
+</div>
+<div class="p-6">
+<div class="flex items-center text-sm text-gray-400 mb-3">
+<span>May 28, 2023</span>
+<span class="mx-2">•</span>
+<span>6 min read</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-3 group-hover:text-primary-500 transition-colors">Best Practices for Microservices Architecture</h3>
+<p class="text-gray-400 mb-4">Key considerations when designing and implementing microservices for scalability.</p>
+<a href="#" class="inline-flex items-center text-primary-500 group-hover:text-primary-400 transition-colors">
+Read article
+<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+</svg>
+</a>
+</div>
+</div>
+
+<!-- Blog Post 3 -->
+<div class="group relative overflow-hidden rounded-2xl bg-dark-700 border border-dark-600 hover:border-primary-500/30 transition-all">
+<div class="h-48 bg-gradient-to-br from-dark-600 to-dark-700 flex items-center justify-center">
+<div class="text-center">
+<div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+<p class="text-gray-400">Blog post image</p>
+</div>
+</div>
+<div class="p-6">
+<div class="flex items-center text-sm text-gray-400 mb-3">
+<span>May 10, 2023</span>
+<span class="mx-2">•</span>
+<span>10 min read</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-3 group-hover:text-primary-500 transition-colors">UX Design Trends for 2023</h3>
+<p class="text-gray-400 mb-4">Emerging patterns and innovations shaping user experiences in digital products.</p>
+<a href="#" class="inline-flex items-center text-primary-500 group-hover:text-primary-400 transition-colors">
+Read article
+<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+</svg>
+</a>
+</div>
+</div>
+</div>
+
+<div class="text-center mt-16">
+<a href="#" class="inline-flex items-center px-6 py-3 border border-gray-700 text-white rounded-full font-medium hover:border-primary-500 hover:text-primary-500 transition-all">
+View all articles
+<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+</svg>
+</a>
+</div>
+</div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-20 bg-gradient-to-r from-dark-800 to-dark-900">
+<div class="container mx-auto px-6 text-center">
+<h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-6">Ready to Build Something Amazing?</h2>
+<p class="max-w-2xl mx-auto text-xl text-gray-400 mb-8">Let's discuss how we can help bring your vision to life with cutting-edge technology and exceptional design.</p>
+<div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+<a href="#contact" class="px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-full font-medium hover:shadow-lg hover:shadow-primary-500/20 transition-all text-center">
+Get Started Today
+</a>
+<a href="#" class="px-8 py-4 border border-gray-700 text-white rounded-full font-medium hover:border-primary-500 hover:text-primary-500 transition-all text-center">
+Schedule a Call
+</a>
+</div>
+</div>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="py-20 bg-dark-900">
+<div class="container mx-auto px-6">
+<div class="flex flex-col lg:flex-row">
+<div class="lg:w-1/2 mb-12 lg:mb-0 lg:pr-12">
+<span class="inline-block px-3 py-1 text-sm font-medium text-primary-500 bg-primary-500/10 rounded-full mb-4">CONTACT US</span>
+<h2 class="text-3xl md:text-4xl font-display font-bold text-white mb-6">Let's Talk About Your Project</h2>
+<p class="text-gray-400 mb-8">Have an idea you'd like to discuss? Fill out the form or reach out directly - we'd love to hear from you.</p>
+
+<div class="space-y-6">
+<div class="flex items-start">
+<div class="w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center text-primary-500 mr-4 mt-1">
+<i class="fas fa-envelope"></i>
+</div>
+<div>
+<h4 class="font-bold text-white mb-1">Email Us</h4>
+<a href="mailto:info@rootx.lk" class="text-gray-400 hover:text-primary-500 transition-colors">info@rootx.lk</a>
+</div>
+</div>
+
+<div class="flex items-start">
+<div class="w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center text-primary-500 mr-4 mt-1">
+<i class="fas fa-phone-alt"></i>
+</div>
+<div>
+<h4 class="font-bold text-white mb-1">Call Us</h4>
+<a href="tel:+94112345678" class="text-gray-400 hover:text-primary-500 transition-colors">+94 112 345 678</a>
+</div>
+</div>
+
+<div class="flex items-start">
+<div class="w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center text-primary-500 mr-4 mt-1">
+<i class="fas fa-map-marker-alt"></i>
+</div>
+<div>
+<h4 class="font-bold text-white mb-1">Visit Us</h4>
+<p class="text-gray-400">123 Tech Street, Colombo 01, Sri Lanka</p>
+</div>
+</div>
+</div>
+
+<div class="mt-12">
+<h4 class="font-bold text-white mb-4">Follow Us</h4>
+<div class="flex space-x-4">
+<a href="#" class="w-10 h-10 rounded-full bg-dark-700 flex items-center justify-center text-gray-400 hover:text-primary-500 hover:bg-dark-600 transition-colors">
+<i class="fab fa-linkedin-in"></i>
+</a>
+<a href="#" class="w-10 h-10 rounded-full bg-dark-700 flex items-center justify-center text-gray-400 hover:text-primary-500 hover:bg-dark-600 transition-colors">
+<i class="fab fa-twitter"></i>
+</a>
+<a href="#" class="w-10 h-10 rounded-full bg-dark-700 flex items-center justify-center text-gray-400 hover:text-primary-500 hover:bg-dark-600 transition-colors">
+<i class="fab fa-facebook-f"></i>
+</a>
+<a href="#" class="w-10 h-10 rounded-full bg-dark-700 flex items-center justify-center text-gray-400 hover:text-primary-500 hover:bg-dark-600 transition-colors">
+<i class="fab fa-instagram"></i>
+</a>
+<a href="#" class="w-10 h-10 rounded-full bg-dark-700 flex items-center justify-center text-gray-400 hover:text-primary-500 hover:bg-dark-600 transition-colors">
+<i class="fab fa-github"></i>
+</a>
+</div>
+</div>
+</div>
+
+<div class="lg:w-1/2">
+<form class="bg-dark-800 border border-dark-700 rounded-2xl p-8">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+<div>
+<label for="name" class="block text-sm font-medium text-gray-300 mb-2">Name</label>
+<input type="text" id="name" class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-white placeholder-gray-500 transition-all" placeholder="Your name">
+</div>
+<div>
+<label for="email" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+<input type="email" id="email" class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-white placeholder-gray-500 transition-all" placeholder="your.email@example.com">
+</div>
+</div>
+<div class="mb-6">
+<label for="subject" class="block text-sm font-medium text-gray-300 mb-2">Subject</label>
+<input type="text" id="subject" class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-white placeholder-gray-500 transition-all" placeholder="What's this about?">
+</div>
+<div class="mb-6">
+<label for="message" class="block text-sm font-medium text-gray-300 mb-2">Message</label>
+<textarea id="message" rows="5" class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-white placeholder-gray-500 transition-all" placeholder="Tell us about your project..."></textarea>
+</div>
+<button type="submit" class="w-full px-6 py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-primary-500/20 transition-all">
+Send Message
+</button>
+</form>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Footer -->
+<footer class="py-12 bg-dark-800 border-t border-dark-700">
+<div class="container mx-auto px-6">
+<div class="flex flex-col md:flex-row justify-between items-center">
+<div class="mb-6 md:mb-0">
+<a href="#" class="text-2xl font-display font-bold text-white">
+<span class="text-primary-500">Root</span>x
+</a>
+<p class="text-gray-400 mt-2">Innovative software solutions for a digital world.</p>
+</div>
+
+<div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-8 text-center sm:text-left">
+<div>
+<h4 class="text-sm font-semibold text-white uppercase tracking-wider mb-4">Company</h4>
+<ul class="space-y-2">
+<li><a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">About</a></li>
+<li><a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">Team</a></li>
+<li><a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">Careers</a></li>
+<li><a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">Blog</a></li>
+</ul>
+</div>
+
+<div>
+<h4 class="text-sm font-semibold text-white uppercase tracking-wider mb-4">Services</h4>
+<ul class="space-y-2">
+<li><a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">Web Development</a></li>
+<li><a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">Mobile Apps</a></li>
+<li><a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">AI Solutions</a></li>
+<li><a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">Cloud Services</a></li>
+</ul>
+</div>
+
+<div>
+<h4 class="text-sm font-semibold text-white uppercase tracking-wider mb-4">Legal</h4>
+<ul class="space-y-2">
+<li><a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">Privacy Policy</a></li>
+<li><a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">Terms of Service</a></li>
+<li><a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">Cookie Policy</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="border-t border-dark-700 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+<p class="text-gray-400 mb-4 md:mb-0">© <span id="current-year"></span> Rootx. All rights reserved.</p>
+<div class="flex space-x-6">
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">Privacy</a>
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">Terms</a>
+<a href="#" class="text-gray-400 hover:text-primary-500 transition-colors">Sitemap</a>
+</div>
+</div>
+</div>
+</footer>
+
+<!-- Back to Top Button -->
+<button id="back-to-top" class="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-primary-500 text-white shadow-lg flex items-center justify-center opacity-0 invisible transition-all duration-300 hover:bg-primary-600">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+</svg>
+</button>
+
+<script>
+    // Preloader
+    window.addEventListener('load', function() {
+        const preloader = document.getElementById('preloader');
+        preloader.style.opacity = '0';
+        setTimeout(() => {
+            preloader.style.display = 'none';
+        }, 500);
+    });
+
+    // Mobile menu toggle
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    mobileMenuButton.addEventListener('click', function() {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    // Set current year in footer
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+
+    // Back to top button
+    const backToTopButton = document.getElementById('back-to-top');
+    
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+            backToTopButton.style.opacity = '1';
+            backToTopButton.style.visibility = 'visible';
+        } else {
+            backToTopButton.style.opacity = '0';
+            backToTopButton.style.visibility = 'hidden';
+        }
+    });
+    
+    backToTopButton.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+
+    // Initialize Splide carousel for testimonials
+    document.addEventListener('DOMContentLoaded', function() {
+        new Splide('.splide', {
+            type: 'loop',
+            perPage: 1,
+            perMove: 1,
+            gap: '2rem',
+            autoplay: true,
+            interval: 5000,
+            pauseOnHover: true,
+            breakpoints: {
+                768: {
+                    perPage: 1
+                }
+            }
+        }).mount();
+    });
+
+    // Initialize Three.js scene for hero section
+    function initThreeJS() {
+        const container = document.getElementById('hero-canvas');
+        if (!container) return;
+
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        // Create scene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a0a);
+
+        // Create camera
+        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+        camera.position.z = 5;
+
+        // Create renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(width, height);
+        container.innerHTML = '';
+        container.appendChild(renderer.domElement);
+
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0x22c55e, 0.8);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Create floating geometric shapes
+        const geometry1 = new THREE.IcosahedronGeometry(1, 0);
+        const material1 = new THREE.MeshPhongMaterial({ 
+            color: 0x22c55e,
+            emissive: 0x14532d,
+            emissiveIntensity: 0.5,
+            shininess: 100,
+            transparent: true,
+            opacity: 0.8,
+            wireframe: true
+        });
+        const shape1 = new THREE.Mesh(geometry1, material1);
+        scene.add(shape1);
+
+        const geometry2 = new THREE.TorusGeometry(0.5, 0.2, 16, 32);
+        const material2 = new THREE.MeshPhongMaterial({ 
+            color: 0x3b82f6,
+            emissive: 0x1d4ed8,
+            emissiveIntensity: 0.3,
+            shininess: 50,
+            transparent: true,
+            opacity: 0.7
+        });
+        const shape2 = new THREE.Mesh(geometry2, material2);
+        shape2.position.x = 1.5;
+        shape2.position.y = -1;
+        scene.add(shape2);
+
+        const geometry3 = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+        const material3 = new THREE.MeshPhongMaterial({ 
+            color: 0xec4899,
+            emissive: 0xbe185d,
+            emissiveIntensity: 0.4,
+            shininess: 80,
+            transparent: true,
+            opacity: 0.7,
+            wireframe: true
+        });
+        const shape3 = new THREE.Mesh(geometry3, material3);
+        shape3.position.x = -1.5;
+        shape3.position.y = 1;
+        scene.add(shape3);
+
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+
+            shape1.rotation.x += 0.005;
+            shape1.rotation.y += 0.01;
+
+            shape2.rotation.x += 0.007;
+            shape2.rotation.y += 0.005;
+
+            shape3.rotation.x += 0.006;
+            shape3.rotation.y += 0.008;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+    }
+
+    // Initialize GSAP animations
+    function initAnimations() {
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Animate elements on scroll
+        gsap.utils.toArray('.service-item, .project-item, .team-member').forEach(item => {
+            gsap.from(item, {
+                scrollTrigger: {
+                    trigger: item,
+                    start: "top 80%",
+                    toggleActions: "play none none none"
+                },
+                y: 50,
+                opacity: 0,
+                duration: 0.8,
+                ease: "power2.out"
+            });
+        });
+
+        // Animate hero content
+        gsap.from('.hero h1', {
+            duration: 1,
+            y: -50,
+            opacity: 0,
+            ease: "power3.out",
+            delay: 0.3
+        });
+
+        gsap.from('.hero p', {
+            duration: 1,
+            y: -30,
+            opacity: 0,
+            ease: "power3.out",
+            delay: 0.6
+        });
+
+        gsap.from('.hero .cta-button', {
+            duration: 1,
+            y: -20,
+            opacity: 0,
+            ease: "power3.out",
+            delay: 0.9
+        });
+    }
+
+    // Initialize everything when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        initThreeJS();
+        initAnimations();
+    });
+   
+</script>
+<script src="script.js"></script>
+</body>
+</html>
